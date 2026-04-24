@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>今天吃什麼？🎰</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FF6B35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="吃什麼">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ── Nav ── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <span class="nav-logo">🎰 今天吃什麼</span>
+    <button class="nav-list-btn" onclick="showScreen('screen-list')">我的餐廳</button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════ -->
+<!-- SCREEN: MAIN (轉盤)                   -->
+<!-- ══════════════════════════════════════ -->
+<div id="screen-main" class="screen active">
+  <div class="main-wrap">
+
+    <!-- 篩選器 -->
+    <div class="filter-section">
+      <div class="filter-group">
+        <div class="filter-label">🍽️ 風格</div>
+        <div class="filter-chips" id="chips-cuisine">
+          <button class="chip active" data-val="">全部</button>
+          <button class="chip" data-val="台式">台式</button>
+          <button class="chip" data-val="日式">日式</button>
+          <button class="chip" data-val="韓式">韓式</button>
+          <button class="chip" data-val="中式">中式</button>
+          <button class="chip" data-val="美式">美式</button>
+          <button class="chip" data-val="西式">西式</button>
+          <button class="chip" data-val="東南亞">東南亞</button>
+          <button class="chip" data-val="素食">素食</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-label">🥘 類型</div>
+        <div class="filter-chips" id="chips-type">
+          <button class="chip active" data-val="">全部</button>
+          <button class="chip" data-val="飯">飯</button>
+          <button class="chip" data-val="麵">麵</button>
+          <button class="chip" data-val="火鍋">火鍋</button>
+          <button class="chip" data-val="燒烤">燒烤</button>
+          <button class="chip" data-val="炸物">炸物</button>
+          <button class="chip" data-val="小吃">小吃</button>
+          <button class="chip" data-val="便當">便當</button>
+          <button class="chip" data-val="輕食">輕食</button>
+          <button class="chip" data-val="甜點">甜點</button>
+          <button class="chip" data-val="滷味">滷味</button>
+          <button class="chip" data-val="夜市">夜市</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-label">🕐 時段</div>
+        <div class="filter-chips" id="chips-time">
+          <button class="chip active" data-val="">全部</button>
+          <button class="chip" data-val="早餐">早餐</button>
+          <button class="chip" data-val="早午餐">早午餐</button>
+          <button class="chip" data-val="午餐">午餐</button>
+          <button class="chip" data-val="下午茶">下午茶</button>
+          <button class="chip" data-val="晚餐">晚餐</button>
+          <button class="chip" data-val="宵夜">宵夜</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-label">💰 預算</div>
+        <div class="filter-chips" id="chips-price">
+          <button class="chip active" data-val="">全部</button>
+          <button class="chip" data-val="$">銅板（< $100）</button>
+          <button class="chip" data-val="$$">平價（$100–300）</button>
+          <button class="chip" data-val="$$$">中價（$300–600）</button>
+          <button class="chip" data-val="$$$$">高價（$600+）</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 轉盤區 -->
+    <div class="wheel-section">
+      <div class="wheel-wrap">
+        <div class="wheel-pointer">▼</div>
+        <canvas id="wheel-canvas" width="320" height="320"></canvas>
+      </div>
+      <div class="match-count" id="match-count">符合條件：— 家餐廳</div>
+      <button class="spin-btn" id="spin-btn" onclick="spinWheel()">
+        <span id="spin-btn-text">🎰 開始轉！</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- SCREEN: 餐廳列表                      -->
+<!-- ══════════════════════════════════════ -->
+<div id="screen-list" class="screen">
+  <div class="list-wrap">
+    <div class="list-header">
+      <button class="back-btn" onclick="showScreen('screen-main')">← 回轉盤</button>
+      <h2>我的餐廳 <span id="list-count" class="count-badge">0</span></h2>
+      <div class="list-header-actions">
+        <button class="btn-outline" onclick="exportData()">匯出</button>
+        <label class="btn-outline" style="cursor:pointer">
+          匯入
+          <input type="file" accept=".json" style="display:none" onchange="importData(event)">
+        </label>
+      </div>
+    </div>
+
+    <div id="restaurant-list" class="restaurant-list"></div>
+
+    <button class="fab-list" onclick="openAddModal()">＋ 新增餐廳</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- MODAL: 轉盤結果                       -->
+<!-- ══════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="result-modal">
+  <div class="result-card">
+    <div class="result-emoji" id="result-emoji">🍜</div>
+    <div class="result-name"  id="result-name">餐廳名稱</div>
+    <div class="result-tags" id="result-tags"></div>
+    <div class="result-addr" id="result-addr"></div>
+    <div class="result-note" id="result-note"></div>
+    <div class="result-actions">
+      <button class="btn-maps" id="btn-maps" onclick="openMaps()" style="display:none">
+        📍 Google Maps
+      </button>
+      <button class="btn-respin" onclick="closeResult(); spinWheel()">🔄 重轉</button>
+      <button class="btn-go"    onclick="closeResult()">✅ 就決定你了！</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- MODAL: 新增 / 編輯 餐廳               -->
+<!-- ══════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="edit-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="edit-modal-title">新增餐廳</h3>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="form-label">餐廳名稱 <span class="req">*</span></label>
+      <input type="text" id="r-name" class="form-input" placeholder="例：一蘭拉麵">
+
+      <label class="form-label">風格（可多選）</label>
+      <div class="multi-check" id="r-cuisine">
+        <label><input type="checkbox" value="台式"> 台式</label>
+        <label><input type="checkbox" value="日式"> 日式</label>
+        <label><input type="checkbox" value="韓式"> 韓式</label>
+        <label><input type="checkbox" value="中式"> 中式</label>
+        <label><input type="checkbox" value="美式"> 美式</label>
+        <label><input type="checkbox" value="西式"> 西式</label>
+        <label><input type="checkbox" value="東南亞"> 東南亞</label>
+        <label><input type="checkbox" value="素食"> 素食</label>
+      </div>
+
+      <label class="form-label">類型（可多選）</label>
+      <div class="multi-check" id="r-type">
+        <label><input type="checkbox" value="飯"> 飯</label>
+        <label><input type="checkbox" value="麵"> 麵</label>
+        <label><input type="checkbox" value="火鍋"> 火鍋</label>
+        <label><input type="checkbox" value="燒烤"> 燒烤</label>
+        <label><input type="checkbox" value="炸物"> 炸物</label>
+        <label><input type="checkbox" value="小吃"> 小吃</label>
+        <label><input type="checkbox" value="便當"> 便當</label>
+        <label><input type="checkbox" value="輕食"> 輕食</label>
+        <label><input type="checkbox" value="甜點"> 甜點</label>
+        <label><input type="checkbox" value="滷味"> 滷味</label>
+        <label><input type="checkbox" value="夜市"> 夜市</label>
+      </div>
+
+      <label class="form-label">適合時段（可多選）</label>
+      <div class="multi-check" id="r-time">
+        <label><input type="checkbox" value="早餐"> 早餐</label>
+        <label><input type="checkbox" value="早午餐"> 早午餐</label>
+        <label><input type="checkbox" value="午餐"> 午餐</label>
+        <label><input type="checkbox" value="下午茶"> 下午茶</label>
+        <label><input type="checkbox" value="晚餐"> 晚餐</label>
+        <label><input type="checkbox" value="宵夜"> 宵夜</label>
+      </div>
+
+      <label class="form-label">預算</label>
+      <select id="r-price" class="form-input">
+        <option value="">不限</option>
+        <option value="$">銅板（< $100）</option>
+        <option value="$$">平價（$100–300）</option>
+        <option value="$$$">中價（$300–600）</option>
+        <option value="$$$$">高價（$600+）</option>
+      </select>
+
+      <label class="form-label">地址</label>
+      <input type="text" id="r-addr" class="form-input" placeholder="例：台北市大安區忠孝東路四段">
+
+      <label class="form-label">Google Maps 連結</label>
+      <input type="url" id="r-maps" class="form-input" placeholder="https://maps.google.com/...">
+
+      <label class="form-label">備註</label>
+      <input type="text" id="r-note" class="form-input" placeholder="必點、停車方便…">
+
+      <div id="edit-err" class="form-error" style="display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" id="delete-r-btn" onclick="deleteRestaurant()" style="display:none; color:#DC2626">刪除</button>
+      <button class="btn-primary" onclick="saveRestaurant()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

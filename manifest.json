@@ -1,0 +1,32 @@
+{
+  "name": "今天吃什麼？",
+  "short_name": "吃什麼",
+  "description": "解決不知道要吃什麼的日常痛點",
+  "start_url": "/food-spinner/",
+  "display": "standalone",
+  "background_color": "#FAFAFA",
+  "theme_color": "#FF6B35",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "share_target": {
+    "action": "/food-spinner/",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text":  "text",
+      "url":   "url"
+    }
+  }
+}
