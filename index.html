@@ -26,13 +26,17 @@
 </nav>
 
 <!-- ══════════════════════════════════════ -->
-<!-- SCREEN: MAIN (轉盤)                   -->
+<!-- SCREEN: MAIN（轉盤）                  -->
 <!-- ══════════════════════════════════════ -->
 <div id="screen-main" class="screen active">
   <div class="main-wrap">
 
     <!-- 篩選器 -->
     <div class="filter-section">
+
+      <!-- 篩選說明 -->
+      <div class="filter-hint">可多選，同一列 OR（取聯集），不同列 AND（取交集）</div>
+
       <div class="filter-group">
         <div class="filter-label">🍽️ 風格</div>
         <div class="filter-chips" id="chips-cuisine">
@@ -80,10 +84,10 @@
       </div>
 
       <div class="filter-group">
-        <div class="filter-label">💰 預算</div>
+        <div class="filter-label">💰 預算（單選）</div>
         <div class="filter-chips" id="chips-price">
           <button class="chip active" data-val="">全部</button>
-          <button class="chip" data-val="$">銅板（< $100）</button>
+          <button class="chip" data-val="$">銅板（&lt; $100）</button>
           <button class="chip" data-val="$$">平價（$100–300）</button>
           <button class="chip" data-val="$$$">中價（$300–600）</button>
           <button class="chip" data-val="$$$$">高價（$600+）</button>
@@ -97,11 +101,44 @@
         <div class="wheel-pointer">▼</div>
         <canvas id="wheel-canvas" width="320" height="320"></canvas>
       </div>
-      <div class="match-count" id="match-count">符合條件：— 家餐廳</div>
+
+      <!-- 符合數量 + 避免重複開關 -->
+      <div class="match-row">
+        <span class="match-count" id="match-count">符合條件：— 家</span>
+        <label class="cooldown-label" title="開啟後，最近 3 次轉到的餐廳不會再出現">
+          <input type="checkbox" id="cooldown-check" onchange="toggleCooldown(this.checked)">
+          <span class="toggle-pill"><span class="toggle-knob"></span></span>
+          <span class="cooldown-text">避免重複</span>
+        </label>
+      </div>
+
       <button class="spin-btn" id="spin-btn" onclick="spinWheel()">
         <span id="spin-btn-text">🎰 開始轉！</span>
       </button>
-    </div>
+
+      <!-- 多人模式切換 -->
+      <button class="multi-btn" id="multi-btn" onclick="toggleMultiMode()">
+        👥 多人模式
+      </button>
+
+      <!-- 多人模式面板 -->
+      <div id="multi-panel" class="multi-panel hidden">
+        <p class="multi-hint">📊 票數越多，轉盤佔比越大；有票的才進轉盤</p>
+        <div id="persons-list" class="persons-list">
+          <p class="persons-empty">加入成員，大家一起投票吧！</p>
+        </div>
+        <div id="add-person-row" class="add-person-row hidden">
+          <input type="text" id="new-person-name" class="person-name-input"
+                 placeholder="輸入名字" maxlength="10">
+          <button class="person-confirm-btn" onclick="confirmAddPerson()">確認</button>
+          <button class="person-cancel-btn"  onclick="cancelAddPerson()">取消</button>
+        </div>
+        <button class="add-person-btn" id="add-person-btn" onclick="showAddPersonRow()">
+          ＋ 加人
+        </button>
+      </div>
+
+    </div><!-- /.wheel-section -->
 
   </div>
 </div>
@@ -136,15 +173,14 @@
   <div class="result-card">
     <div class="result-emoji" id="result-emoji">🍜</div>
     <div class="result-name"  id="result-name">餐廳名稱</div>
-    <div class="result-tags" id="result-tags"></div>
-    <div class="result-addr" id="result-addr"></div>
-    <div class="result-note" id="result-note"></div>
+    <div class="result-tags"  id="result-tags"></div>
+    <div class="result-votes" id="result-votes" style="display:none"></div>
+    <div class="result-addr"  id="result-addr"></div>
+    <div class="result-note"  id="result-note"></div>
     <div class="result-actions">
-      <button class="btn-maps" id="btn-maps" onclick="openMaps()" style="display:none">
-        📍 Google Maps
-      </button>
+      <button class="btn-maps"   id="btn-maps"   onclick="openMaps()">📍 Google Maps</button>
       <button class="btn-respin" onclick="closeResult(); spinWheel()">🔄 重轉</button>
-      <button class="btn-go"    onclick="closeResult()">✅ 就決定你了！</button>
+      <button class="btn-go"     onclick="closeResult()">✅ 就決定你了！</button>
     </div>
   </div>
 </div>
@@ -202,7 +238,7 @@
       <label class="form-label">預算</label>
       <select id="r-price" class="form-input">
         <option value="">不限</option>
-        <option value="$">銅板（< $100）</option>
+        <option value="$">銅板（&lt; $100）</option>
         <option value="$$">平價（$100–300）</option>
         <option value="$$$">中價（$300–600）</option>
         <option value="$$$$">高價（$600+）</option>
@@ -222,6 +258,22 @@
     <div class="modal-footer">
       <button class="btn-ghost" id="delete-r-btn" onclick="deleteRestaurant()" style="display:none; color:#DC2626">刪除</button>
       <button class="btn-primary" onclick="saveRestaurant()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- MODAL: 多人選餐廳                     -->
+<!-- ══════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="person-pick-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="person-pick-title">選你想吃的</h3>
+      <button class="modal-close" onclick="closePersonPick()">✕</button>
+    </div>
+    <div id="person-pick-body" class="modal-body person-pick-body"></div>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="closePersonPick()">完成</button>
     </div>
   </div>
 </div>
